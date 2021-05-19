@@ -49,27 +49,32 @@ function findChebyshevDistance(x1, y1, x2, y2) {
   return Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
 }
 
+function CannotReachGoal(mes) {
+  this.name = 'CannotReachGoal';
+  this.message = mes;
+}
+
 function findNeighbors(node, graph) {
   const { grid } = graph;
   const neighbors = [];
   const { x } = node;
   const { y } = node;
 
-  // from above
+  // on left
   if (grid[x] && grid[x][y - 1]) {
     neighbors.push(grid[x][y - 1]);
   }
 
-  // from below
+  // on right
   if (grid[x] && grid[x][y + 1]) {
     neighbors.push(grid[x][y + 1]);
   }
-  // on right
+  // from above
   if (grid[x - 1] && grid[x - 1][y]) {
     neighbors.push(grid[x - 1][y]);
   }
 
-  // on left
+  // from below
   if (grid[x + 1] && grid[x + 1][y]) {
     neighbors.push(grid[x + 1][y]);
   }
@@ -84,6 +89,7 @@ function findNeighbors(node, graph) {
     if (grid[x + 1] && grid[x + 1][y + 1]) {
       neighbors.push(grid[x + 1][y + 1]);
     }
+
     // on below and left
     if (grid[x + 1] && grid[x + 1][y - 1]) {
       neighbors.push(grid[x + 1][y - 1]);
@@ -94,8 +100,11 @@ function findNeighbors(node, graph) {
       neighbors.push(grid[x - 1][y + 1]);
     }
   }
-
-  return neighbors.filter((itemNode) => itemNode.height !== 'X');
+  const resNeighbors = neighbors.filter((itemNode) => itemNode.height !== 'X');
+  if (resNeighbors === []) {
+    throw CannotReachGoal('Cannot reach the goal.');
+  }
+  return resNeighbors;
 }
 
 function withdrawElem(arr, elem) {
@@ -165,7 +174,7 @@ function astar(start, end, graph) {
 
     currentNode = withdrawElem(open, closest);
   }
-  return -1;
+  throw new CannotReachGoal('Cannot reach the goal.');
 }
 
 function getPathPlan(node) {
@@ -187,17 +196,60 @@ steps: ${steps}
 fuel: ${fuel}`);
 }
 
-function calculateRoverPath(map) {
-  const graph = new Graph(map, true);
-  graph.toNumeric();
-  const start = graph.grid[0][0];
-  const end = graph.grid[map.length - 1][map[0].length - 1];
-  const resultNode = astar(start, end, graph);
+function CannotStartMovement(mes) {
+  this.name = 'CannotStartMovement';
+  this.message = mes;
+}
 
-  const pathPlan = getPathPlan(resultNode);
+function checkData(matrix) {
+  for (const row of matrix) {
+    for (const elem of row) {
+      if ((elem !== 'X' && isNaN(elem))) {
+        throw new CannotStartMovement('Cannot start a movement because of uncorrect data.');
+      }
+    }
+  }
+}
+
+function CannotStartWithX(mes) {
+  this.name = 'CannotStartWithX';
+  this.message = mes;
+}
+
+function calculateRoverPath(map) {
+  let pathPlan = '';
+  try {
+    checkData(map);
+    const graph = new Graph(map, true);
+    graph.toNumeric();
+    const start = graph.grid[0][0];
+
+    if (start.height === 'X') {
+      throw new CannotStartWithX('Cannot start a movement because it is start with X');
+    }
+
+    const end = graph.grid[map.length - 1][map[0].length - 1];
+    if (end.height === 'X') {
+      throw new CannotReachGoal('Cannot reach the goal because the goal is X');
+    }
+    const resultNode = astar(start, end, graph);
+
+    pathPlan = getPathPlan(resultNode);
+  } catch (error) {
+    pathPlan = error.message;
+  }
   fs.writeFileSync('path-plan.txt', pathPlan);
 }
 
 module.exports = {
   calculateRoverPath,
 };
+
+const FOTO2 = [
+  ['0', '-1', '-1', '-1', '0'],
+  ['-1', '-1', '-3', '-1', '-1'],
+  ['0', '-1', '-1', '-1', '0'],
+  ['0', '0', '0', '0', '0'],
+];
+
+calculateRoverPath(FOTO2);
