@@ -59,7 +59,7 @@ function findNeighbors(node, grid) {
   if (grid[x + 1] && grid[x + 1][y]) {
     neighbors.push(grid[x + 1][y]);
   }
-  return neighbors;
+  return neighbors.filter((itemNode) => itemNode.height !== 'X');
 }
 
 function withdrawElem(arr, elem) {
@@ -93,9 +93,8 @@ function astar(start, end, graph) {
   while (open.length > 0) {
     const neighbors = findNeighbors(currentNode, graph.grid);
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const neighbor of neighbors) {
-      if (graph.open.includes(neighbor)) {
+      if (open.includes(neighbor)) {
         const edge = Math.abs(currentNode.height - neighbor.height) + 1;
         const pathScore = currentNode.g + edge;
 
@@ -111,13 +110,13 @@ function astar(start, end, graph) {
       }
     }
 
-    const closest = findClosest(graph.open);
+    const closest = findClosest(open);
 
     if (closest === end) {
       return closest;
     }
 
-    currentNode = withdrawElem(graph.open, closest);
+    currentNode = withdrawElem(open, closest);
   }
   return -1;
 }
@@ -155,11 +154,3 @@ function calculateRoverPath(map) {
 module.exports = {
   calculateRoverPath,
 };
-
-const FOTO1 = [
-  ['1', '1', 'X', 'X', 'X'],
-  ['1', '1', 'X', 'X', '8'],
-  ['1', '1', '0', '0', '3'],
-];
-
-calculateRoverPath(FOTO1);
