@@ -244,12 +244,3 @@ function calculateRoverPath(map) {
 module.exports = {
   calculateRoverPath,
 };
-
-const FOTO2 = [
-  ['0', '-1', '-1', '-1', '0'],
-  ['-1', '-1', '-3', '-1', '-1'],
-  ['0', '-1', '-1', '-1', '0'],
-  ['0', '0', '0', '0', '0'],
-];
-
-calculateRoverPath(FOTO2);
