@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax */
 const fs = require('fs');
 
 function Node(x, y, height) {
